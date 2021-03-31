@@ -436,7 +436,7 @@ static const char *message = "{\n"
 
 static size_t httpCallBack(char *buffer, size_t size, size_t nitems, void *outstream)
 {
-	return size * nitems;
+    return size * nitems;
 }
 
 int main()
@@ -462,15 +462,20 @@ int main()
     } while (strm.avail_out == 0);
     deflateEnd(&strm);
 
+    int i = 0;
+
+    CURL *curl;
+    CURLcode res;
+
+    /* In windows, this will init the winsock stuff */
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    /* get a curl handle */
+    curl = curl_easy_init();
+
+    for (i = 0; i < 5; i++)
     {
-        CURL *curl;
-        CURLcode res;
 
-        /* In windows, this will init the winsock stuff */
-        curl_global_init(CURL_GLOBAL_ALL);
-
-        /* get a curl handle */
-        curl = curl_easy_init();
         if (curl)
         {
             curl_easy_setopt(curl, CURLOPT_CAINFO, "curl-ca-bundle.crt");
@@ -495,12 +500,13 @@ int main()
             if (res != CURLE_OK)
                 fprintf(stderr, "curl_easy_perform() failed: %s\n",
                         curl_easy_strerror(res));
-
-            /* always cleanup */
-            curl_easy_cleanup(curl);
         }
-        curl_slist_free_all(headers);
-        curl_global_cleanup();
     }
+
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+
+    curl_slist_free_all(headers);
+    curl_global_cleanup();
     return 0;
 }
