@@ -449,18 +449,6 @@ int main()
     int have;
     z_stream strm;
 
-    strm_init(&strm);
-    strm.next_in = (unsigned char *)message;
-    strm.avail_in = strlen(message);
-    do
-    {
-        strm.avail_out = CHUNK;
-        strm.next_out = out;
-        CALL_ZLIB(deflate(&strm, Z_FINISH));
-        have = CHUNK - strm.avail_out;
-        printf("\ninputlength=%lu outputlength=%d strm.avail_out=%d\n", strlen(message), have, strm.avail_out);
-    } while (strm.avail_out == 0);
-    deflateEnd(&strm);
 
     int i = 0;
 
@@ -475,9 +463,21 @@ int main()
 
     for (i = 0; i < 5; i++)
     {
-
         if (curl)
         {
+            strm_init(&strm);
+            strm.next_in = (unsigned char *)message;
+            strm.avail_in = strlen(message);
+            do
+            {
+                strm.avail_out = CHUNK;
+                strm.next_out = out;
+                CALL_ZLIB(deflate(&strm, Z_FINISH));
+                have = CHUNK - strm.avail_out;
+                printf("\ninputlength=%lu outputlength=%d strm.avail_out=%d\n", strlen(message), have, strm.avail_out);
+            } while (strm.avail_out == 0);
+            deflateEnd(&strm);
+
             curl_easy_setopt(curl, CURLOPT_CAINFO, "curl-ca-bundle.crt");
             snprintf(agent, sizeof(agent), "libcurl/%s",
                      curl_version_info(CURLVERSION_NOW)->version);
